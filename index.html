@@ -27,10 +27,11 @@
                             <el-menu-item index="3">拉流代理</el-menu-item>
                             <el-menu-item index="4">推流代理</el-menu-item>
                             <el-menu-item index="5">FFmpeg推拉流</el-menu-item>
-                            <el-menu-item index="6">服务器配置</el-menu-item>
+                            <el-menu-item index="6">Rtp服务</el-menu-item>
+                            <el-menu-item index="7">服务器配置</el-menu-item>
                         </el-menu>
                     </el-col>
-                    <el-col :xs="1" :sm="1" :md="1" :lg="1" :xl="1" v-show="selectIndex==='6'">
+                    <el-col :xs="1" :sm="1" :md="1" :lg="1" :xl="1" v-show="selectIndex==='7'">
                         <el-popconfirm confirm-button-text='好的' cancel-button-text='不用了' icon="el-icon-info"
                             icon-color="red" title="这只有Daemon方式才能重启，否则是直接关闭！确定重启吗？" @confirm="restartServer">
                             <el-button type="danger" plain slot="reference" icon="el-icon-refresh-right">重启</el-button>
@@ -519,10 +520,10 @@
                 </div>                
                 <div v-show="selectIndex==='5'">
                     <el-form style="margin: 10px;">
-                        <el-form-item label="源Url" label-width="180px">
+                        <el-form-item label="源地址" label-width="180px">
                             <el-input v-model="addFFmpeg_param.src_url"></el-input>
                         </el-form-item>
-                        <el-form-item label="目的Url" label-width="180px">
+                        <el-form-item label="目的地址" label-width="180px">
                             <el-input v-model="addFFmpeg_param.dst_url"></el-input>
                         </el-form-item>
                         <el-form-item label="命令模板" label-width="180px">
@@ -541,8 +542,8 @@
                         </el-form-item>
                     </el-form>
                     <el-table :data="ffmpeglist" empty-text="暂无数据">
-                        <el-table-column sortable prop="src_url" label="src_url"> </el-table-column>
-                        <el-table-column sortable prop="dst_url" label="dst_url"> </el-table-column>
+                        <el-table-column sortable prop="src_url" label="源地址"> </el-table-column>
+                        <el-table-column sortable prop="dst_url" label="目的地址"> </el-table-column>
                         <el-table-column sortable prop="ffmpeg_cmd_key" label="命令模板"></el-table-column>
                         <el-table-column sortable prop="cmd" label="命令行"> </el-table-column>
                         <el-table-column label="操作">
@@ -552,8 +553,88 @@
                             </template>
                         </el-table-column>
                     </el-table>
-                </div>                
-                <div v-if="selectIndex==='6'">
+                </div>
+                <div v-show="selectIndex==='6'">
+                    <el-form style="margin: 10px;">
+                        <el-form-item label="虚拟主机" label-width="180px">
+                            <el-input v-model="addRtpServer_param.vhost"></el-input>
+                        </el-form-item>
+                        <el-form-item label="应用名" label-width="180px">
+                            <el-input v-model="addRtpServer_param.app"></el-input>
+                        </el-form-item>
+                        <el-form-item label="流id" label-width="180px">
+                            <el-input v-model="addRtpServer_param.stream_id"></el-input>
+                        </el-form-item>
+                        <el-form-item label="tcp模式" label-width="180px">
+                            <el-select v-model="addRtpServer_param.tcp_mode" style="width: 100%;">
+                                <el-option v-for="(val,key) in typeTcpMode" :label="val" :value="key"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="流过滤" label-width="180px">
+                            <el-select v-model="addRtpServer_param.only_track" style="width: 100%;">
+                                <el-option v-for="(val,key) in typeOnlyTrack" :label="val" :value="key"></el-option>
+                            </el-select>                            
+                        </el-form-item>
+                        <el-form-item label="本地ip" label-width="180px">
+                            <el-input v-model="addRtpServer_param.local_ip"></el-input>
+                        </el-form-item>
+                        <el-form-item label="端口" label-width="180px">
+                            <el-input v-model="addRtpServer_param.port">
+                                <template #append>
+                                    <el-checkbox v-model="addRtpServer_param.re_use_port" label="端口复用"/>                                    
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="SSRC" label-width="180px">
+                            <el-input v-model="addRtpServer_param.ssrc"></el-input>
+                        </el-form-item>
+                        <el-form-item label="">
+                            <el-button type="primary" @click="openRtpServer">增加</el-button>
+                            <el-button type="primary" icon="el-icon-refresh" @click="listRtpServer">刷新</el-button>
+                        </el-form-item>
+                    </el-form>
+                    <el-table :data="rtpserverlist" empty-text="暂无数据">
+                        <el-table-column sortable prop="vhost" label="vhost"> </el-table-column>
+                        <el-table-column sortable prop="app" label="app"> </el-table-column>
+                        <el-table-column sortable prop="stream_id" label="stream"> </el-table-column>
+                        <el-table-column sortable prop="port" label="端口"></el-table-column>
+                        <el-table-column sortable prop="tcp_mode" label="tcp模式">
+                            <template slot-scope="scope">
+                                {{typeTcpMode[scope.row.tcp_mode]}}
+                            </template>
+                        </el-table-column>
+                        <el-table-column sortable prop="only_track" label="流过滤">
+                            <template slot-scope="scope">
+                                {{typeOnlyTrack[scope.row.only_track]}}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="ssrc" width="160">
+                            <template slot-scope="scope">
+                                <el-input v-model="scope.row.ssrc" class="input-with-select">
+                                    <template #append>
+                                        <el-button icon="el-icon-refresh" @click="updateRtpServerSSRC(scope.row)"></el-button>
+                                    </template>
+                                </el-input>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="dst_url" label="目的地址" width="280">
+                            <template slot-scope="scope">
+                                <div style="display: flex;">
+                                    <el-input placeholder="ip" v-model="scope.row.dst_url" style="flex:4;"></el-input>
+                                    <el-input placeholder="port" v-model="scope.row.dst_port" style="flex:2"></el-input>
+                                    <el-button size="small" @click="connectRtpServer(scope.$index, scope.row)">连接</el-button>
+                                </div>    
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="danger"
+                                    @click="closeRtpServer(scope.$index, scope.row)">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+                <div v-if="selectIndex==='7'">
                     <el-tabs tab-position="left" style="height: 100%;">
                         <el-tab-pane label="通用设置">
                             <el-row :gutter="20">
@@ -564,10 +645,8 @@
                                                 check_nvidia_dev
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.general.check_nvidia_dev"
-                                                    placeholder="请选择" style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.general.check_nvidia_dev" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -576,10 +655,8 @@
                                                 启用虚拟主机
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.general.enableVhost" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.general.enableVhost" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -597,10 +674,8 @@
                                                 启用FFMPEG日志
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.general.enable_ffmpeg_log"
-                                                    placeholder="请选择" style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.general.enable_ffmpeg_log" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -628,10 +703,8 @@
                                                 断连删除
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.general.resetWhenRePlay"
-                                                    placeholder="请选择" style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.general.resetWhenRePlay" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -742,10 +815,8 @@
                                                 调试
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.api.apiDebug" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.api.apiDebug" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -786,10 +857,8 @@
                                                 启用hook事件
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.hook.enable" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.hook.enable" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -998,10 +1067,8 @@
                                                 广播hls切片完成
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.hls.broadcastRecordTs"
-                                                    placeholder="请选择" style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.hls.broadcastRecordTs" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1052,10 +1119,8 @@
                                                 保留hls文件
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.hls.segKeep" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.hls.segKeep" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1123,8 +1188,7 @@
                                                 编码
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.http.charSet" placeholder="请选择"
-                                                    style="width: 100%;">
+                                                <el-select v-model="serverConfig.http.charSet" placeholder="请选择" style="width: 100%;">
                                                     <el-option label="UTF-8" value="utf-8"></el-option>
                                                     <el-option label="GB2312" value="gb2312"></el-option>
                                                 </el-select>
@@ -1197,10 +1261,8 @@
                                                 显示目录列表
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.record.dirMenu" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="否" value="0"></el-option>
-                                                    <el-option label="是" value="1"></el-option>
+                                                <el-select v-model="serverConfig.record.dirMenu" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1219,10 +1281,8 @@
                                                 允许跨域请求
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.record.allow_cross_domains"
-                                                    placeholder="请选择" style="width: 100%;">
-                                                    <el-option label="否" value="0"></el-option>
-                                                    <el-option label="是" value="1"></el-option>
+                                                <el-select v-model="serverConfig.record.allow_cross_domains" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1249,10 +1309,8 @@
                                                 开启音频
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.enable_audio"
-                                                    placeholder="请选择" style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.enable_audio" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1262,10 +1320,8 @@
                                                 添加静音音轨
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.add_mute_audio"
-                                                    placeholder="请选择" style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.add_mute_audio" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1292,10 +1348,8 @@
                                                 将mp4录制当做观看者
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.mp4_as_player"
-                                                    placeholder="请选择" style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.mp4_as_player" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1341,10 +1395,8 @@
                                                 无人观看时，直接关闭
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.auto_close" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.auto_close" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1357,10 +1409,8 @@
                                                 启用 http-fmp4/ws-fmp4
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.enable_fmp4" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.enable_fmp4" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1370,10 +1420,8 @@
                                                 启用 hls
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.enable_hls" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.enable_hls" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1383,10 +1431,8 @@
                                                 启用MP4录制
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.enable_mp4" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.enable_mp4" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1396,10 +1442,8 @@
                                                 启用 rtmp/flv
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.enable_rtmp" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.enable_rtmp" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1409,10 +1453,8 @@
                                                 启用 rtsp
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.enable_rtsp" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.enable_rtsp" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1421,10 +1463,8 @@
                                                 启用 http-ts/ws-ts
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.enable_ts" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.enable_ts" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1437,10 +1477,8 @@
                                                 按需生成 http[s]-fmp4、ws[s]-fmp4
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.fmp4_demand" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.fmp4_demand" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1450,10 +1488,8 @@
                                                 按需生成 hls
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.hls_demand" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.hls_demand" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1463,10 +1499,8 @@
                                                 按需生成 rtmp[s]、http[s]-flv、ws[s]-flv
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.rtmp_demand" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.rtmp_demand" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1476,10 +1510,8 @@
                                                 按需生成 rtsp[s]
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.rtsp_demand" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.rtsp_demand" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1489,10 +1521,8 @@
                                                 按需生成 http[s]-ts
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.protocol.ts_demand" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.protocol.ts_demand" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
 
                                             </div>
@@ -1555,10 +1585,8 @@
                                                 fastStart
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.record.fastStart" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.record.fastStart" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1584,10 +1612,8 @@
                                                 循环播放
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.record.fileRepeat" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.record.fileRepeat" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1747,10 +1773,8 @@
                                                 低延迟模式
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.rtsp.lowLatency" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.rtsp.lowLatency" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1777,10 +1801,8 @@
                                                 直接代理模式
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.rtsp.directProxy" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.rtsp.directProxy" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1824,10 +1846,8 @@
                                                 低延迟开关
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.rtp.lowLatency" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.rtp.lowLatency" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1844,10 +1864,8 @@
                                                 采用stap-a模式
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.rtp.h264_stap_a" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.rtp.h264_stap_a" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -1896,10 +1914,8 @@
                                                 开启gop缓存优化
                                             </div>
                                             <div class="conf_item_value">
-                                                <el-select v-model="serverConfig.rtp_proxy.gop_cache" placeholder="请选择"
-                                                    style="width: 100%;">
-                                                    <el-option label="是" value="1"></el-option>
-                                                    <el-option label="否" value="0"></el-option>
+                                                <el-select v-model="serverConfig.rtp_proxy.gop_cache" placeholder="请选择" style="width: 100%;">
+                                                    <el-option v-for="(val,key) in yesNo" :label="val" :value="key"></el-option>
                                                 </el-select>
                                             </div>
                                         </div>
@@ -2118,6 +2134,20 @@
                 host: "",
                 secret: "",
                 selectIndex: '1',
+                yesNo:{
+                    0:'否',
+                    1:'是',
+                },
+                typeTcpMode:{
+                    0:"无",
+                    1:"被动",
+                    2:"主动"
+                },
+                typeOnlyTrack:{
+                    0:"全部",
+                    1:"只音频",
+                    2:"只视频",
+                },
                 getMediaList_queryparams: {
                     schema: null,
                     vhost: "__defaultVhost__",
@@ -2186,6 +2216,18 @@
                     timeout_ms: 10000,
                     enable_hls: false,
                     enable_mp4: false,
+                },
+                rtpserverlist: [],
+                addRtpServer_param:{
+                    vhost: "__defaultVhost__",
+                    app: "rtp",
+                    stream_id: "test",
+                    tcp_mode: "1",
+                    only_track: "0",
+                    local_ip: '',
+                    re_use_port: true,
+                    port: 0,
+                    ssrc: 0,
                 },
                 pusherProxyList: [],
                 streamProxyList: [],
@@ -2426,7 +2468,7 @@
                     this.updatetimer = null;
                 }
                 if (key) this.selectIndex = key;
-                if (this.selectIndex == '6') {
+                if (this.selectIndex == '7') {
                     this.getServerConfig();
                 }
                 else if (this.selectIndex == '3') {
@@ -2437,6 +2479,9 @@
                 }
                 else if (this.selectIndex == '5') {
                     this.listFFmpegSource();
+                }
+                else if (this.selectIndex == '6') {
+                    this.listRtpServer();
                 }
                 else if (this.selectIndex == '2') {
                     var ishttps = 'https:' == document.location.protocol ? true : false
@@ -2825,6 +2870,34 @@
                     else this.medialist = [];
                 })
             },
+            listRtpServer() {
+                const url = `${this.host}/index/api/listRtpServer?secret=${this.secret}`;
+                this.performRequest(url, "", "", resp => {
+                    if (resp.data.data) this.rtpserverlist = resp.data.data;
+                    else this.rtpserverlist = [];
+                })
+            },
+            openRtpServer() {
+                const url = `${this.host}/index/api/openRtpServer?secret=${this.secret}&` + Qs.stringify(this.addRtpServer_param);
+                this.performRequest(url, '添加成功!', '', () => this.listRtpServer());
+            },
+            closeRtpServer(index, row) {
+                console.log(index, row);
+                const url = `${this.host}/index/api/closeRtpServer?secret=${this.secret}&stream_id=${row.stream_id}&vhost=${row.vhost}&app=${row.app}`;
+                this.performRequest(url, '删除成功!', '', () => this.listRtpServer());
+            },
+            connectRtpServer(index, row) {
+                console.log(index, row);
+                const url = `${this.host}/index/api/connectRtpServer?secret=${this.secret}&stream_id=${row.stream_id}&vhost=${row.vhost}&app=${row.app}&dst_url=${row.dst_url}&dst_port=${row.dst_port}`;
+                console.log(url);
+                this.performRequest(url, '连接成功!', '', () => this.listRtpServer());
+            },
+            updateRtpServerSSRC(row) {
+                const url = `${this.host}/index/api/updateRtpServerSSRC?secret=${this.secret}&stream_id=${row.stream_id}&vhost=${row.vhost}&app=${row.app}&ssrc=${row.ssrc}`;                
+                console.log(url);
+                this.performRequest(url, '更新成功!', '', () => this.listRtpServer());
+            },
+            
             listFFmpegSource() {
                 const url = `${this.host}/index/api/listFFmpegSource?secret=${this.secret}`;
                 this.performRequest(url, "", "", resp => {
@@ -2907,6 +2980,9 @@
 
     .confs>.conf_item>.conf_item_value {
         width: 70%;
+    }
+    .input-with-select .el-input-group__prepend {
+       background-color: var(--el-fill-color-blank);
     }
 </style>
 

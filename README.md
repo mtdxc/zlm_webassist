@@ -49,6 +49,8 @@
 
 - [x] FFmpeg推拉流管理(添加，删除和列表)
 
+- [x] RTP服务管理(添加，删除，连接远端、设置ssrc和列表)
+
 - [x] 获取 某个 MediaSource 的 Player 列表
 
 - [x] 重启服务器
@@ -101,9 +103,11 @@
 - [ ] "/index/api/stopRecord",
 - [ ] "/index/api/getRecordStatus",
 - [ ] "/index/api/getSnap",
-- [ ] "/index/api/openRtpServer",
-- [ ] "/index/api/closeRtpServer",
-- [ ] "/index/api/listRtpServer",
+- [x] "/index/api/updateRtpServerSSRC",
+- [x] "/index/api/connectRtpServer",
+- [x] "/index/api/openRtpServer",
+- [x] "/index/api/closeRtpServer",
+- [x] "/index/api/listRtpServer",
 - [x] "/index/api/listStreamPusherProxy",
 - [x] "/index/api/listStreamProxy",
 - [x] "/index/api/listFFmpegSource",
