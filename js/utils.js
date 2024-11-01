@@ -39,3 +39,32 @@ function flattenObject(obj, parentKey = '') {
 
     return result;
 }
+
+function byteString(value) {
+    const GB = 1024 * 1024 * 1024;
+    const MB = 1024 * 1024;
+    if (value >= GB) {
+        return (value / GB).toFixed(2).toString() + "GB"
+    }
+    else if (value >= MB) {
+        return (value / MB).toFixed(2).toString() + "MB"
+    }
+    else if (value >= 1024) {
+        return (value / 1024).toFixed(2).toString() + "KB"
+    }
+    else {
+        return value.toString() + "byte"
+    }
+}
+
+function durationFormat(seconds) {
+    seconds = Math.floor(seconds);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+    const formattedSeconds = String(secs).padStart(2, '0');
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}

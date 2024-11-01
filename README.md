@@ -43,15 +43,19 @@
 
 - [x] 修改 server 配置
 
-- [x] 添加推流代理
+- [x] 推流代理管理(添加，删除和列表)
 
-- [x] 添加拉流代理
+- [x] 拉流代理管理(添加，删除和列表)
+
+- [x] FFmpeg推拉流管理(添加，删除和列表)
+
+- [x] RTP服务管理(添加，删除，连接远端、设置ssrc和列表)
+
+- [x] 获取 某个 MediaSource 的 Player 列表
 
 - [x] 重启服务器
 
 待实现功能：
-
-- [ ] 关闭代理（目前可用关闭流代替）
 
 - [ ] 开启、关闭录制
 
@@ -75,14 +79,14 @@
 ### 目前用到的zlm的接口
 
 
-- [ ] "/index/api/addFFmpegSource",
+- [x] "/index/api/addFFmpegSource",
 - [x] "/index/api/addStreamProxy",
 - [x] "/index/api/close_stream",
 - [x] "/index/api/close_streams",
-- [ ] "/index/api/delFFmpegSource",
-- [ ] "/index/api/delStreamProxy",
+- [x] "/index/api/delFFmpegSource",
+- [x] "/index/api/delStreamProxy",
 - [x] "/index/api/getAllSession",
-- [ ] "/index/api/getApiList",
+- [x] "/index/api/getApiList",
 - [x] "/index/api/getMediaList",
 - [x] "/index/api/getServerConfig",
 - [x] "/index/api/getThreadsLoad",
@@ -99,13 +103,18 @@
 - [ ] "/index/api/stopRecord",
 - [ ] "/index/api/getRecordStatus",
 - [ ] "/index/api/getSnap",
-- [ ] "/index/api/openRtpServer",
-- [ ] "/index/api/closeRtpServer",
-- [ ] "/index/api/listRtpServer",
+- [x] "/index/api/updateRtpServerSSRC",
+- [x] "/index/api/connectRtpServer",
+- [x] "/index/api/openRtpServer",
+- [x] "/index/api/closeRtpServer",
+- [x] "/index/api/listRtpServer",
+- [x] "/index/api/listStreamPusherProxy",
+- [x] "/index/api/listStreamProxy",
+- [x] "/index/api/listFFmpegSource",
 - [ ] "/index/api/startSendRtp",
 - [ ] "/index/api/stopSendRtp",
 - [x] "/index/api/getStatistic",
 - [x] "/index/api/addStreamPusherProxy",
-- [ ] "/index/api/delStreamPusherProxy",
+- [x] "/index/api/delStreamPusherProxy",
 - [x] "/index/api/version",
-- [ ] "/index/api/getMediaPlayerList"
+- [x] "/index/api/getMediaPlayerList"
