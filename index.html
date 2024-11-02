@@ -68,6 +68,7 @@
                     <el-divider><i class="el-icon-s-data"></i></el-divider>
                     <div style="width: 100%;text-align: right;">
                         <el-checkbox label="自动刷新" v-model="autorefresh_medialist" ></el-checkbox>
+                        <el-button type="primary" icon="el-icon-refresh" @click="getMediaList">刷新</el-button>
                     </div>
 
                     <el-table :data="medialist" empty-text="暂无数据">
@@ -221,6 +222,7 @@
                     <el-divider><i class="el-icon-connection"></i></el-divider>
                     <div style="width: 100%;text-align: right;">
                         <el-checkbox label="自动刷新" v-model="autorefresh_session" ></el-checkbox>
+                        <el-button type="primary" icon="el-icon-refresh" @click="getAllSession">刷新</el-button>
                     </div>
 
                     <el-table :data="sessionlist" empty-text="暂无连接数据">
@@ -306,160 +308,158 @@
                         </el-col>
                     </el-row>
                 </div>
-                <div v-if="selectIndex==='3'">
-                    <el-row :gutter="20">
-                        <el-col :span="8" :offset="1" style="border-radius: 4px; background-color: #545c6421;">
-                            <el-form style="margin: 10px;">
-                                <!-- <el-form-item label="api操作密钥" label-width="180px">
-                                    <el-input v-model="secret" disabled></el-input>
-                                </el-form-item> -->
-                                <el-form-item label="虚拟主机" label-width="180px">
-                                    <el-input v-model="addStreamProxy_params.vhost"></el-input>
-                                </el-form-item>
-                                <el-form-item label="应用名" label-width="180px">
-                                    <el-input v-model="addStreamProxy_params.app"></el-input>
-                                </el-form-item>
-                                <el-form-item label="流id" label-width="180px">
-                                    <el-input v-model="addStreamProxy_params.stream"></el-input>
-                                </el-form-item>
-                                <el-form-item label="拉流地址" label-width="180px">
-                                    <el-input v-model="addStreamProxy_params.url"
-                                        placeholder="例如rtmp://live.hkstv.hk.lxdns.com/live/hks2"></el-input>
-                                </el-form-item>
-                                <el-form-item label="" label-width="180px">
-                                    <el-row style="text-align: left;">
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.enable_hls">转hls-mpeg</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.enable_hls_fmp4">转hls-fmp4</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.enable_mp4">mp4录制</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.enable_rtsp">转rtsp</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.enable_rtmp">转rtmp/flv</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.enable_ts">转http-ts/ws-ts</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.enable_fmp4">转http-fmp4/ws-fmp4</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.hls_demand">按需生成hls</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.rtsp_demand">按需生成rtsp</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.rtmp_demand">按需生成rtmp</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.ts_demand">按需生成ts</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.fmp4_demand">按需生成fmp4</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.enable_audio">允许音频</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="8">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.add_mute_audio">添加静音音轨</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="16">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.mp4_as_player">MP4录制当作观看者参与播放人数计数</el-checkbox>
-                                        </el-col>
-                                        <el-col :span="16">
-                                            <el-checkbox
-                                                v-model="addStreamProxy_params.auto_close">无人观看自动关闭流(不触发无人观看hook)</el-checkbox>
-                                        </el-col>
-                                    </el-row>
-                                </el-form-item>
-                                <el-form-item label="拉流方式" label-width="180px">
-                                    <el-select v-model="addStreamProxy_params.rtp_type" style="width: 100%;">
-                                        <el-option label="TCP" value="0"> </el-option>
-                                        <el-option label="UDP" value="1"> </el-option>
-                                        <el-option label="组播" value="2"> </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="超时时间" label-width="180px">
-                                    <el-input v-model="addStreamProxy_params.timeout_sec"></el-input>
-                                </el-form-item>
-                                <el-form-item label="重试次数" label-width="180px">
-                                    <el-input v-model="addStreamProxy_params.retry_count" placeholder="默认为-1无限重试"></el-input>
-                                </el-form-item>
-                                <el-form-item label="时间戳覆盖" label-width="180px">
-                                    <el-select v-model="addStreamProxy_params.modify_stamp" style="width: 100%;">
-                                        <el-option label="不开启" value=""> </el-option>
-                                        <el-option label="绝对时间戳" value="0"> </el-option>
-                                        <el-option label="系统时间戳" value="1"> </el-option>
-                                        <el-option label="相对时间戳" value="2"> </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="mp4录像保存目录" label-width="180px">
-                                    <el-input v-model="addStreamProxy_params.mp4_save_path"
-                                        placeholder="mp4录像保存目录，置空使用默认"></el-input>
-                                </el-form-item>
-                                <el-form-item label="mp4切片大小(s)" label-width="180px">
-                                    <el-input v-model="addStreamProxy_params.mp4_max_second"
-                                        placeholder="mp4录像切片大小(s)"></el-input>
-                                </el-form-item>
-                                <el-form-item label="hls文件保存目录" label-width="180px">
-                                    <el-input v-model="addStreamProxy_params.hls_save_path"
-                                        placeholder="hls文件保存目录，置空使用默认"></el-input>
-                                </el-form-item>
-                                <el-form-item label="">
-                                    <el-input type="textarea" :rows="5" v-model="apiurl" readonly></el-input>
-                                </el-form-item>
-                            </el-form>
-                        </el-col>
-                        <el-col :span="12" :offset="2" style="border-radius: 4px; background-color: #545c6421;">
-                            <el-form style="margin: 10px;">
-                                <div style="margin: 10px;width: 100%;text-align: left;">
-                                    <el-button type="primary" @click="addStreamProxy">增加</el-button>
-                                    <el-button type="primary" icon="el-icon-refresh" @click="listStreamProxy">刷新</el-button>
-                                </div>
-                                <el-table :data="streamProxyList" empty-text="暂无拉流代理">
-                                    <!-- <el-table-column sortable prop="key" label="key"> </el-table-column> -->
-                                    <el-table-column sortable prop="url" label="url"> </el-table-column>
-                                    <el-table-column sortable prop="src.app" label="app"> </el-table-column>
-                                    <el-table-column sortable prop="src.stream" label="stream"> </el-table-column>
-                                    <el-table-column sortable prop="status" label="状态"> </el-table-column>
-                                    <el-table-column sortable prop="liveSecs" label="时长(s)"> </el-table-column>
-                                    <el-table-column sortable prop="rePullCount" label="重试次数"> </el-table-column>
-                                    <el-table-column sortable prop="totalReaderCount" label="观看人数"> </el-table-column>
-                                    <el-table-column label="操作">
-                                        <template slot-scope="scope">
-                                            <el-button size="mini" type="danger"
-                                                @click="delStreamProxy(scope.$index, scope.row)">删除</el-button>
-                                        </template>
-                                    </el-table-column>
-                                </el-table>    
-                            </el-form>
-                        </el-col>
-                    </el-row>
+                <div v-if="selectIndex==='3'" style="display: flex;">
+                    <div style="border-radius: 4px; background-color: #545c6421;margin: 10px; flex:1">
+                        <el-form style="margin: 10px;">
+                            <!-- <el-form-item label="api操作密钥" label-width="180px">
+                                <el-input v-model="secret" disabled></el-input>
+                            </el-form-item> -->
+                            <el-form-item label="虚拟主机" label-width="180px">
+                                <el-input v-model="addStreamProxy_params.vhost"></el-input>
+                            </el-form-item>
+                            <el-form-item label="应用名" label-width="180px">
+                                <el-input v-model="addStreamProxy_params.app"></el-input>
+                            </el-form-item>
+                            <el-form-item label="流id" label-width="180px">
+                                <el-input v-model="addStreamProxy_params.stream"></el-input>
+                            </el-form-item>
+                            <el-form-item label="拉流地址" label-width="180px">
+                                <el-input v-model="addStreamProxy_params.url"
+                                    placeholder="例如rtmp://live.hkstv.hk.lxdns.com/live/hks2"></el-input>
+                            </el-form-item>
+                            <el-form-item label="" label-width="180px">
+                                <el-row style="text-align: left;">
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.enable_hls">转hls-mpeg</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.enable_hls_fmp4">转hls-fmp4</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.enable_mp4">mp4录制</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.enable_rtsp">转rtsp</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.enable_rtmp">转rtmp/flv</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.enable_ts">转http-ts/ws-ts</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.enable_fmp4">转http-fmp4/ws-fmp4</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.hls_demand">按需生成hls</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.rtsp_demand">按需生成rtsp</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.rtmp_demand">按需生成rtmp</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.ts_demand">按需生成ts</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.fmp4_demand">按需生成fmp4</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.enable_audio">允许音频</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="8">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.add_mute_audio">添加静音音轨</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="16">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.mp4_as_player">MP4录制当作观看者参与播放人数计数</el-checkbox>
+                                    </el-col>
+                                    <el-col :span="16">
+                                        <el-checkbox
+                                            v-model="addStreamProxy_params.auto_close">无人观看自动关闭流(不触发无人观看hook)</el-checkbox>
+                                    </el-col>
+                                </el-row>
+                            </el-form-item>
+                            <el-form-item label="拉流方式" label-width="180px">
+                                <el-select v-model="addStreamProxy_params.rtp_type" style="width: 100%;">
+                                    <el-option label="TCP" value="0"> </el-option>
+                                    <el-option label="UDP" value="1"> </el-option>
+                                    <el-option label="组播" value="2"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="超时时间" label-width="180px">
+                                <el-input v-model="addStreamProxy_params.timeout_sec"></el-input>
+                            </el-form-item>
+                            <el-form-item label="重试次数" label-width="180px">
+                                <el-input v-model="addStreamProxy_params.retry_count" placeholder="默认为-1无限重试"></el-input>
+                            </el-form-item>
+                            <el-form-item label="时间戳覆盖" label-width="180px">
+                                <el-select v-model="addStreamProxy_params.modify_stamp" style="width: 100%;">
+                                    <el-option label="不开启" value=""> </el-option>
+                                    <el-option label="绝对时间戳" value="0"> </el-option>
+                                    <el-option label="系统时间戳" value="1"> </el-option>
+                                    <el-option label="相对时间戳" value="2"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="mp4录像保存目录" label-width="180px">
+                                <el-input v-model="addStreamProxy_params.mp4_save_path"
+                                    placeholder="mp4录像保存目录，置空使用默认"></el-input>
+                            </el-form-item>
+                            <el-form-item label="mp4切片大小(s)" label-width="180px">
+                                <el-input v-model="addStreamProxy_params.mp4_max_second"
+                                    placeholder="mp4录像切片大小(s)"></el-input>
+                            </el-form-item>
+                            <el-form-item label="hls文件保存目录" label-width="180px">
+                                <el-input v-model="addStreamProxy_params.hls_save_path"
+                                    placeholder="hls文件保存目录，置空使用默认"></el-input>
+                            </el-form-item>
+                            <el-form-item label="">
+                                <el-input type="textarea" :rows="5" v-model="apiurl" readonly></el-input>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                    <div style="border-radius: 4px; background-color: #545c6421;margin: 10px; flex:1">
+                        <el-form style="margin: 10px;">
+                            <div style="margin-bottom: 10px;width: 100%;text-align: left;">
+                                <el-button type="primary" @click="addStreamProxy">增加</el-button>
+                                <el-button type="primary" icon="el-icon-refresh" @click="listStreamProxy">刷新</el-button>
+                            </div>
+                            <el-table :data="streamProxyList" empty-text="暂无拉流代理">
+                                <!-- <el-table-column sortable prop="key" label="key"> </el-table-column> -->
+                                <el-table-column sortable prop="url" label="url"> </el-table-column>
+                                <el-table-column sortable prop="src.app" label="app"> </el-table-column>
+                                <el-table-column sortable prop="src.stream" label="stream"> </el-table-column>
+                                <el-table-column sortable prop="status" label="状态"> </el-table-column>
+                                <el-table-column sortable prop="liveSecs" label="时长(s)"> </el-table-column>
+                                <el-table-column sortable prop="rePullCount" label="重试次数"> </el-table-column>
+                                <el-table-column sortable prop="totalReaderCount" label="观看人数"> </el-table-column>
+                                <el-table-column label="操作">
+                                    <template slot-scope="scope">
+                                        <el-button size="mini" type="danger"
+                                            @click="delStreamProxy(scope.$index, scope.row)">删除</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>    
+                        </el-form>
+                    </div>
                 </div>
                 <div v-if="selectIndex==='4'">
-                    <el-form style="margin: 10px;">
+                    <el-form>
                         <!-- <el-form-item label="api操作密钥" label-width="180px">
                             <el-input v-model="secret" disabled></el-input>
                         </el-form-item> -->
@@ -496,11 +496,11 @@
                         </el-form-item>
                         <el-form-item label="">
                             <!-- <el-input type="textarea" :rows="5" v-model="addStreamPusherProxy_apiurl" readonly></el-input> -->
+                            <div style="width: 100%;text-align: right;">
+                                <el-button type="primary" @click="addStreamPusherProxy">增加</el-button>
+                                <el-button type="primary" icon="el-icon-refresh" @click="listStreamPusherProxy">刷新</el-button>
+                            </div>
                         </el-form-item>
-                        <div style="width: 100%;text-align: right;">
-                            <el-button type="primary" @click="addStreamPusherProxy">增加</el-button>
-                            <el-button type="primary" icon="el-icon-refresh" @click="listStreamPusherProxy">刷新</el-button>
-                        </div>
                     </el-form>
                     <el-table :data="pusherProxyList" empty-text="暂无推流代理">
                         <!-- <el-table-column sortable prop="key" label="key"> </el-table-column> -->
@@ -519,7 +519,7 @@
                     </el-table>                
                 </div>                
                 <div v-show="selectIndex==='5'">
-                    <el-form style="margin: 10px;">
+                    <el-form>
                         <el-form-item label="源地址" label-width="180px">
                             <el-input v-model="addFFmpeg_param.src_url"></el-input>
                         </el-form-item>
@@ -555,7 +555,7 @@
                     </el-table>
                 </div>
                 <div v-show="selectIndex==='6'">
-                    <el-form style="margin: 10px;">
+                    <el-form>
                         <el-form-item label="虚拟主机" label-width="180px">
                             <el-input v-model="addRtpServer_param.vhost"></el-input>
                         </el-form-item>
